@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -16,7 +17,7 @@ public class MainManager : MonoBehaviour
     
     private bool m_Started = false;
     private int m_Points;
-    int highScore;
+    public int highScore;
     
     private bool m_GameOver = false;
 
@@ -38,6 +39,8 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        ScoreText.text = PlayerManager.Instance.playerName + " " + $"Score : {m_Points}";
+        LoadPlayerData();
     }
 
     private void Update()
@@ -62,7 +65,7 @@ public class MainManager : MonoBehaviour
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
-        highScoreText.text = "High : " + PlayerManager.Instance.playerName + " " + highScore.ToString();
+        highScoreText.text = "High : " + highScore.ToString();
     }
 
     void AddPoint(int point)
@@ -72,12 +75,45 @@ public class MainManager : MonoBehaviour
         {
             highScore = m_Points;
         }
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = PlayerManager.Instance.playerName + " " + $"Score : {m_Points}";
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        SavePlayerData();
+    }
+
+    [System.Serializable]
+    class PlayerData
+    {
+        public string playerName;
+        public int highScore;
+    }
+    void SavePlayerData()
+    {
+        PlayerData player = new PlayerData();
+        player.playerName = PlayerManager.Instance.playerName;
+        player.highScore = highScore;
+
+        string json = JsonUtility.ToJson(player);
+
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+
+    void LoadPlayerData()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+
+            PlayerData player = JsonUtility.FromJson<PlayerData>(json);
+            if(player.highScore > 0)
+            {
+                highScore = player.highScore;
+            }
+        }
     }
 }
