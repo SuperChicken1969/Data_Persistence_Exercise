@@ -12,9 +12,11 @@ public class MainManager : MonoBehaviour
 
     public Text ScoreText;
     public GameObject GameOverText;
+    public Text highScoreText;
     
     private bool m_Started = false;
     private int m_Points;
+    int highScore;
     
     private bool m_GameOver = false;
 
@@ -60,11 +62,16 @@ public class MainManager : MonoBehaviour
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
+        highScoreText.text = "High : " + PlayerManager.Instance.playerName + " " + highScore.ToString();
     }
 
     void AddPoint(int point)
     {
         m_Points += point;
+        if(m_Points > highScore)
+        {
+            highScore = m_Points;
+        }
         ScoreText.text = $"Score : {m_Points}";
     }
 
